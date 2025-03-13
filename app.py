@@ -1,13 +1,15 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from utils import preprocess_csv_funnel
+from utils import preprocess_csv_funnel, preprocess_active_users
+import plotly.express as px
+import numpy as np
 
 # Sidebar menu
 st.sidebar.title("Menu")
 option = st.sidebar.radio(
     "Choose an option:",
-    ('Funnel', 'Web Scraping')
+    ('Funnel', 'Active Users Heatmap 24H')
 )
 
 st.title("In-Game Analytics App")
@@ -88,4 +90,60 @@ if option == 'Funnel':
         )
 
         st.plotly_chart(fig, use_container_width=True)
+        
+elif option == 'Active Users Heatmap 24H':
+    st.header("🔥 Active Users Heatmap 24H")
 
+    # Date filters
+    cols = st.columns(2)
+    with cols[0]:
+        start_date = st.date_input("Start Date")
+    with cols[1]:
+        end_date = st.date_input("End Date")
+
+    # Timezone selection (default: Eastern Time)
+    timezone = st.selectbox("Select Timezone", [
+        "America/Toronto",  # Eastern Time
+        "America/Winnipeg",  # Central Time
+        "America/Edmonton",  # Mountain Time
+        "America/Vancouver"  # Pacific Time
+    ], index=0)
+
+    # CSV Upload
+    uploaded_file = st.file_uploader("Upload Active Users CSV", type="csv")
+
+    if uploaded_file:
+        st.write("CSV Preview:")
+        df = pd.read_csv(uploaded_file)
+        st.dataframe(df.head())
+
+        # Generate button
+        generate_chart_btn = st.button("Generate Chart")
+
+        if generate_chart_btn:
+            with st.spinner("Processing data..."):
+                heatmap_data = preprocess_active_users(df, start_date, end_date, timezone)
+
+                if not heatmap_data.empty:
+                    # Ensure the matrix is properly shaped
+                    heatmap_matrix = heatmap_data["avg_users"].values.reshape(-1, 1)  # Fix issue
+
+                    # Plot heatmap (Hour on Y-axis)
+                    fig = px.imshow(
+                        heatmap_matrix,
+                        labels={"x": "Active Users", "y": "Hour"},
+                        y=heatmap_data["hour"],  # Hours on y-axis
+                        color_continuous_scale="viridis"
+                    )
+
+                    fig.update_layout(
+                        title="Average Active Users Over 24 Hours (Converted to Selected Timezone)",
+                        yaxis_title="Hour of the Day",
+                        xaxis_title="Active Users",
+                        coloraxis_colorbar_title="Avg Users",
+                        autosize=True
+                    )
+
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.error("No data found for the selected date range.")
