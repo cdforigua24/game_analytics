@@ -1,1 +1,4 @@
 plotly
+selenium 
+webdriver-manager 
+beautifulsoup4
