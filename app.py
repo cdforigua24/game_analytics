@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from utils import preprocess_csv_funnel, scrape_steamdb_chart
+from utils import preprocess_csv_funnel
 
 # Sidebar menu
 st.sidebar.title("Menu")
