@@ -58,8 +58,6 @@ if option == 'Funnel':
             economic_purchases
         ]
 
-        funnel_values, funnel_labels = zip(*sorted(zip(funnel_values, funnel_labels), reverse=True))
-
         st.subheader("📈 Full Conversion Funnel")
 
         fig = go.Figure(go.Funnel(
