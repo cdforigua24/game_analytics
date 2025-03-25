@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import time
+import ast
 import pytz
 import numpy as np
 
@@ -14,19 +15,35 @@ def extract_user_id(event_str):
         return None
 
 
-def preprocess_csv_funnel(df: pd.DataFrame):
+def extract_email(event_str):
+    try:
+        event_data = ast.literal_eval(event_str)
+        return event_data.get('user_details', {}).get('email', None)
+    except (ValueError, SyntaxError):
+        return None
+
+def preprocess_csv_funnel(df: pd.DataFrame, ignored_users_df: pd.DataFrame = None): 
+    # Extract emails from the 'Event' column
+    df['user_email'] = df['Event'].apply(extract_email).str.lower()
+
+    # Filter out ignored users if provided
+    if ignored_users_df is not None:
+        ignored_emails = set(ignored_users_df['email'].astype(str).str.lower())
+        df = df[~df['user_email'].isin(ignored_emails)]
+
+    # Count new user registrations
     new_user_registry_count = df[df['Event Sub Type'] == 'new_user_registry'].shape[0]
 
+    # Game completions
     game_started_df = df[
         (df['Event Type'] == 'gameplay') & 
         (df['Event Sub Type'] == 'game_complete')
-    ].copy()
-    game_started_df['user_id'] = game_started_df['Event'].apply(extract_user_id)
-    players_started_game = game_started_df['user_id'].nunique()
+    ]
+    players_started_game = game_started_df['user_email'].nunique()
 
-    economic_purchase_df = df[df['Event Type'].isin(['economy', 'purchase'])].copy()
-    economic_purchase_df['user_id'] = economic_purchase_df['Event'].apply(extract_user_id)
-    players_economic_purchase = economic_purchase_df['user_id'].nunique()
+    # Economy or purchase events
+    economic_purchase_df = df[df['Event Type'].isin(['economy', 'purchase'])]
+    players_economic_purchase = economic_purchase_df['user_email'].nunique()
 
     return new_user_registry_count, players_started_game, players_economic_purchase
 

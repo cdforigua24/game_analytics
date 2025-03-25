@@ -27,6 +27,12 @@ if option == 'Funnel':
 
     st.subheader("External Data CSV")
     uploaded_file = st.file_uploader("Choose Helika CSV file", type="csv")
+    filter_organic = st.checkbox("Filter organic users")
+    organic_users_file = None
+
+    if filter_organic:
+        st.markdown("Upload a CSV file containing users to ignore (e.g., Steam IDs):")
+        organic_users_file = st.file_uploader("Users to Ignore CSV", type="csv", key="ignore_users")
 
     if 'csv_uploaded' not in st.session_state:
         st.session_state['csv_uploaded'] = False
@@ -36,7 +42,11 @@ if option == 'Funnel':
         st.write("CSV Preview:")
         st.dataframe(df.head())
 
-        new_user_regs, started_games, economic_purchases = preprocess_csv_funnel(df)
+        ignored_users_df = None
+        if filter_organic and organic_users_file:
+            ignored_users_df = pd.read_csv(organic_users_file)
+
+        new_user_regs, started_games, economic_purchases = preprocess_csv_funnel(df, ignored_users_df)
         st.session_state['csv_uploaded'] = True  
 
     create_funnel_btn = st.button("Create Funnel", disabled=not st.session_state['csv_uploaded'])
