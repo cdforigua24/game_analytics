@@ -159,8 +159,8 @@ elif option == 'Active Users Heatmap 24H':
                     st.error("No data found for the selected date range.")
 
 
-if __name__ == "__main__":
-    ignored_users_df =  pd.read_csv("Exclude Email List.csv", sep=";")
-    df = pd.read_csv("playtest2_with_new_registry.csv")
-    preprocess_csv_funnel(df, ignored_users_df)
+#if __name__ == "__main__":
+#    ignored_users_df =  pd.read_csv("Exclude Email List.csv", sep=";")
+#    df = pd.read_csv("playtest2_with_new_registry.csv")
+#    preprocess_csv_funnel(df, ignored_users_df)
 
