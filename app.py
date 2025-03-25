@@ -31,7 +31,7 @@ if option == 'Funnel':
     organic_users_file = None
 
     if filter_organic:
-        st.markdown("Upload a CSV file containing users to ignore (e.g., Steam IDs):")
+        st.markdown("Upload a CSV file containing users to ignore (CSV File with Email Column):")
         organic_users_file = st.file_uploader("Users to Ignore CSV", type="csv", key="ignore_users")
 
     if 'csv_uploaded' not in st.session_state:
