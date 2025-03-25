@@ -44,7 +44,7 @@ if option == 'Funnel':
 
         ignored_users_df = None
         if filter_organic and organic_users_file:
-            ignored_users_df = pd.read_csv(organic_users_file)
+            ignored_users_df = pd.read_csv(organic_users_file, sep=";")
 
         new_user_regs, started_games, economic_purchases = preprocess_csv_funnel(df, ignored_users_df)
         st.session_state['csv_uploaded'] = True  
@@ -157,3 +157,10 @@ elif option == 'Active Users Heatmap 24H':
                     st.plotly_chart(fig, use_container_width=True)
                 else:
                     st.error("No data found for the selected date range.")
+
+
+if __name__ == "__main__":
+    ignored_users_df =  pd.read_csv("Exclude Email List.csv", sep=";")
+    df = pd.read_csv("playtest2_with_new_registry.csv")
+    preprocess_csv_funnel(df, ignored_users_df)
+

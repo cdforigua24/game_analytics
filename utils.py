@@ -17,7 +17,7 @@ def extract_user_id(event_str):
 
 def extract_email(event_str):
     try:
-        event_data = ast.literal_eval(event_str)
+        event_data = json.loads(event_str)
         return event_data.get('user_details', {}).get('email', None)
     except (ValueError, SyntaxError):
         return None
@@ -30,6 +30,10 @@ def preprocess_csv_funnel(df: pd.DataFrame, ignored_users_df: pd.DataFrame = Non
     if ignored_users_df is not None:
         ignored_emails = set(ignored_users_df['email'].astype(str).str.lower())
         df = df[~df['user_email'].isin(ignored_emails)]
+
+    # Filter out emails with disallowed domains
+    disallowed_domains = {'reblink.com', 'windwalk.games', 'windwalk.com'}
+    df = df[~df['user_email'].str.extract(r'@([\w\.-]+)$')[0].isin(disallowed_domains)]
 
     # Count new user registrations
     new_user_registry_count = df[df['Event Sub Type'] == 'new_user_registry'].shape[0]
